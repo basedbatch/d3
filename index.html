@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>BrainJuiceOS</title>
+
+<style>
+
+html,
+body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Segoe UI,Tahoma,sans-serif;
+    background:#000;
+}
+
+/* ========================= */
+/* BOOT SCREEN */
+/* ========================= */
+
+#bootScreen{
+    position:fixed;
+    inset:0;
+    background:#000;
+    color:#00ff88;
+    padding:20px;
+    font-family:Consolas,monospace;
+    z-index:99999;
+}
+
+#bootLog{
+    white-space:pre-wrap;
+}
+
+/* ========================= */
+/* LOGIN SCREEN */
+/* ========================= */
+
+#loginScreen{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:
+    linear-gradient(
+    135deg,
+    #1a1a1a,
+    #252525,
+    #101010);
+}
+
+.loginBox{
+    width:400px;
+    background:#1f1f1f;
+    border-radius:12px;
+    padding:30px;
+    color:white;
+    box-shadow:0 0 30px rgba(0,0,0,.6);
+}
+
+.loginBox h1{
+    text-align:center;
+}
+
+.loginBox input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:6px;
+    background:#333;
+    color:white;
+    box-sizing:border-box;
+}
+.os-window{
+    position:absolute;
+    background:#1e1e1e;
+    color:white;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+.window-titlebar{
+    height:35px;
+    background:#2d2d2d;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    cursor:move;
+    user-select:none;
+}
+
+.window-buttons{
+    display:flex;
+    gap:4px;
+}
+
+.window-buttons button{
+    width:28px;
+    height:24px;
+}
+
+.window-content{
+    height:calc(100% - 35px);
+    overflow:auto;
+    background:#252525;
+}
+
+.resize-handle{
+    position:absolute;
+    right:0;
+    bottom:0;
+    width:16px;
+    height:16px;
+    cursor:nwse-resize;
+}
+
+.taskbar-app{
+    margin:4px;
+    padding:4px 12px;
+}
+  
+.loginBox button{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    border:none;
+    background:#00aa66;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+/* ========================= */
+/* DESKTOP */
+/* ========================= */
+
+#desktop{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:
+    linear-gradient(
+    45deg,
+    #0d1b2a,
+    #1b263b,
+    #415a77);
+}
+
+/* ========================= */
+/* SIDEBAR */
+/* ========================= */
+
+#sidebar{
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:40px;
+    width:64px;
+    background:rgba(20,20,20,.7);
+    backdrop-filter:blur(10px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:10px;
+    gap:10px;
+}
+
+.dockIcon{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    background:#2a2a2a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:22px;
+}
+
+/* ========================= */
+/* DESKTOP ICONS */
+/* ========================= */
+
+#desktopIcons{
+    position:absolute;
+    left:80px;
+    top:20px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.desktopIcon{
+    width:80px;
+    text-align:center;
+    color:white;
+    cursor:pointer;
+}
+
+.desktopIcon img{
+    width:48px;
+    height:48px;
+}
+
+/* ========================= */
+/* WINDOW AREA */
+/* ========================= */
+
+#windows{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+
+/* ========================= */
+/* TASKBAR */
+/* ========================= */
+
+#taskbar{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:40px;
+    background:rgba(20,20,20,.8);
+    backdrop-filter:blur(10px);
+
+    display:flex;
+    align-items:center;
+}
+
+#startButton{
+    width:100px;
+    height:100%;
+    border:none;
+    background:#008855;
+    color:white;
+    cursor:pointer;
+}
+
+#taskbarApps{
+    flex:1;
+    display:flex;
+}
+
+#clock{
+    width:120px;
+    text-align:center;
+    color:white;
+}
+
+/* ========================= */
+/* START MENU */
+/* ========================= */
+
+#startMenu{
+    position:absolute;
+    left:0;
+    bottom:40px;
+    width:300px;
+    height:450px;
+    display:none;
+
+    background:rgba(30,30,30,.95);
+
+    color:white;
+
+    border-top-right-radius:12px;
+
+    overflow:hidden;
+}
+
+#startHeader{
+    padding:15px;
+    font-size:22px;
+    background:#111;
+}
+
+#startApps{
+    padding:10px;
+}
+
+.startApp{
+    padding:10px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.startApp:hover{
+    background:#333;
+}
+
+/* ========================= */
+/* NOTIFICATIONS */
+/* ========================= */
+
+#notificationArea{
+    position:absolute;
+    right:10px;
+    top:10px;
+    width:300px;
+    z-index:5000;
+}
+
+.notification{
+    background:#222;
+    color:white;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ====================== -->
+<!-- BOOT -->
+<!-- ====================== -->
+
+<div id="bootScreen">
+<pre id="bootLog">
+BrainJuiceOS Bootloader
+Loading Kernel...
+</pre>
+</div>
+
+<!-- ====================== -->
+<!-- LOGIN -->
+<!-- ====================== -->
+
+<div id="loginScreen">
+
+<div class="loginBox">
+
+<h1>BrainJuiceOS</h1>
+
+<input
+id="username"
+placeholder="Username"
+value="admin">
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+value="brainjuice">
+
+<button id="loginBtn">
+Login
+</button>
+
+</div>
+
+</div>
+
+<!-- ====================== -->
+<!-- DESKTOP -->
+<!-- ====================== -->
+
+<div id="desktop">
+
+<!-- Dock -->
+
+<div id="sidebar">
+
+<div class="dockIcon">🌐</div>
+<div class="dockIcon">📁</div>
+<div class="dockIcon">⌨️</div>
+<div class="dockIcon">⚙️</div>
+<div class="dockIcon">🛒</div>
+
+</div>
+
+<!-- Desktop Icons -->
+
+<div id="desktopIcons">
+
+<div class="desktopIcon">
+<div style="font-size:48px;">📁</div>
+Files
+</div>
+
+<div class="desktopIcon">
+<div style="font-size:48px;">🌐</div>
+Browser
+</div>
+
+<div class="desktopIcon">
+<div style="font-size:48px;">⌨️</div>
+Terminal
+</div>
+
+<div class="desktopIcon">
+<div style="font-size:48px;">🛒</div>
+App Store
+</div>
+
+<div class="desktopIcon">
+<div style="font-size:48px;">⚙️</div>
+Settings
+</div>
+
+</div>
+
+<!-- Window Layer -->
+
+<div id="windows"></div>
+
+<!-- Notifications -->
+
+<div id="notificationArea"></div>
+
+<!-- Start Menu -->
+
+<div id="startMenu">
+
+<div id="startHeader">
+BrainJuiceOS
+</div>
+
+<div id="startApps">
+
+<div class="startApp">
+🌐 Browser
+</div>
+
+<div class="startApp">
+📁 File Explorer
+</div>
+
+<div class="startApp">
+⌨️ Terminal
+</div>
+
+<div class="startApp">
+⚙️ Settings
+</div>
+
+<div class="startApp">
+🛒 App Store
+</div>
+
+<div class="startApp">
+🧠 BrainJuice IDE
+</div>
+
+<div class="startApp">
+🎮 Game Maker
+</div>
+
+<div class="startApp">
+🛠 App Builder
+</div>
+
+</div>
+
+</div>
+
+<!-- Taskbar -->
+
+<div id="taskbar">
+
+<button id="startButton">
+Start
+</button>
+
+<div id="taskbarApps"></div>
+
+<div id="clock">
+00:00
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ========================= */
+/* BOOT SEQUENCE */
+/* ========================= */
+
+const bootLog =
+document.getElementById("bootLog");
+
+const bootMessages = [
+
+"Loading Kernel...",
+"Loading BrainFS...",
+"Loading Desktop Manager...",
+"Loading Window Manager...",
+"Loading Applications...",
+"Loading BrainJuice Runtime...",
+"Starting Login Service...",
+"Boot Complete"
+
+];
+
+let bootIndex = 0;
+
+const bootTimer =
+setInterval(()=>{
+
+if(bootIndex < bootMessages.length){
+
+bootLog.textContent +=
+"\n" + bootMessages[bootIndex];
+
+bootIndex++;
+
+}else{
+
+clearInterval(bootTimer);
+
+setTimeout(()=>{
+
+document.getElementById("bootScreen")
+.style.display = "none";
+
+document.getElementById("loginScreen")
+.style.display = "flex";
+
+},1000);
+
+}
+
+},500);
+
+/* ========================= */
+/* LOGIN */
+/* ========================= */
+
+document
+.getElementById("loginBtn")
+.addEventListener("click",()=>{
+
+const user =
+document.getElementById("username").value;
+
+const pass =
+document.getElementById("password").value;
+
+if(
+user==="admin" &&
+pass==="brainjuice"
+){
+
+document.getElementById("loginScreen")
+.style.display="none";
+
+document.getElementById("desktop")
+.style.display="block";
+
+}else{
+
+alert("Invalid Login");
+
+}
+
+});
+
+/* ========================= */
+/* START MENU */
+/* ========================= */
+
+const startButton =
+document.getElementById("startButton");
+
+const startMenu =
+document.getElementById("startMenu");
+
+startButton.onclick=()=>{
+
+if(startMenu.style.display==="block"){
+startMenu.style.display="none";
+}else{
+startMenu.style.display="block";
+}
+
+};
+
+/* ========================= */
+/* CLOCK */
+/* ========================= */
+
+function updateClock(){
+
+const d = new Date();
+
+document.getElementById("clock")
+.textContent =
+d.toLocaleTimeString();
+
+}
+
+setInterval(updateClock,1000);
+
+updateClock();
+
+</script>
+/* =======================================
+   BRAINJUICE WINDOW MANAGER
+======================================= */
+
+let highestZ = 100;
+
+const runningApps = {};
+
+function bringToFront(win){
+    highestZ++;
+    win.style.zIndex = highestZ;
+}
+
+function notify(message){
+
+    const box = document.createElement("div");
+
+    box.className = "notification";
+
+    box.textContent = message;
+
+    document
+        .getElementById("notificationArea")
+        .appendChild(box);
+
+    setTimeout(()=>{
+        box.remove();
+    },4000);
+}
+
+/* =======================================
+   WINDOW CREATION
+======================================= */
+
+function createWindow(
+    title,
+    contentHTML,
+    width = 700,
+    height = 500
+){
+
+    const win = document.createElement("div");
+
+    win.className = "os-window";
+
+    win.style.width = width + "px";
+    win.style.height = height + "px";
+
+    win.style.left =
+        Math.floor(Math.random()*200+100)+"px";
+
+    win.style.top =
+        Math.floor(Math.random()*100+60)+"px";
+
+    highestZ++;
+    win.style.zIndex = highestZ;
+
+    const id =
+        "app_" +
+        Date.now() +
+        "_" +
+        Math.random();
+
+    win.dataset.id = id;
+
+    win.innerHTML = `
+
+    <div class="window-titlebar">
+
+        <span>${title}</span>
+
+        <div class="window-buttons">
+
+            <button class="min-btn">_</button>
+            <button class="max-btn">□</button>
+            <button class="close-btn">X</button>
+
+        </div>
+
+    </div>
+
+    <div class="window-content">
+
+        ${contentHTML}
+
+    </div>
+
+    <div class="resize-handle"></div>
+
+    `;
+
+    document
+        .getElementById("windows")
+        .appendChild(win);
+
+    createTaskbarButton(id,title,win);
+
+    setupDragging(win);
+
+    setupResize(win);
+
+    setupControls(win);
+
+    bringToFront(win);
+
+    win.addEventListener(
+        "mousedown",
+        ()=>bringToFront(win)
+    );
+
+    return win;
+}
+
+/* =======================================
+   TASKBAR BUTTONS
+======================================= */
+
+function createTaskbarButton(
+    id,
+    title,
+    win
+){
+
+    const btn =
+    document.createElement("button");
+
+    btn.className =
+    "taskbar-app";
+
+    btn.textContent =
+    title;
+
+    btn.dataset.window=id;
+
+    btn.onclick=()=>{
+
+        if(win.style.display==="none"){
+
+            win.style.display="block";
+
+            bringToFront(win);
+
+        }else{
+
+            bringToFront(win);
+
+        }
+
+    };
+
+    document
+    .getElementById("taskbarApps")
+    .appendChild(btn);
+}
+
+/* =======================================
+   WINDOW CONTROLS
+======================================= */
+
+function setupControls(win){
+
+    const close =
+    win.querySelector(".close-btn");
+
+    const min =
+    win.querySelector(".min-btn");
+
+    const max =
+    win.querySelector(".max-btn");
+
+    close.onclick=()=>{
+
+        const id =
+        win.dataset.id;
+
+        document
+        .querySelector(
+        `[data-window="${id}"]`
+        )?.remove();
+
+        win.remove();
+    };
+
+    min.onclick=()=>{
+
+        win.style.display="none";
+
+    };
+
+    max.onclick=()=>{
+
+        if(
+        win.dataset.maximized==="true"
+        ){
+
+            win.style.left=
+            win.dataset.oldLeft;
+
+            win.style.top=
+            win.dataset.oldTop;
+
+            win.style.width=
+            win.dataset.oldWidth;
+
+            win.style.height=
+            win.dataset.oldHeight;
+
+            win.dataset.maximized=
+            "false";
+
+        }else{
+
+            win.dataset.oldLeft=
+            win.style.left;
+
+            win.dataset.oldTop=
+            win.style.top;
+
+            win.dataset.oldWidth=
+            win.style.width;
+
+            win.dataset.oldHeight=
+            win.style.height;
+
+            win.style.left="64px";
+            win.style.top="0px";
+
+            win.style.width=
+            "calc(100% - 64px)";
+
+            win.style.height=
+            "calc(100% - 40px)";
+
+            win.dataset.maximized=
+            "true";
+        }
+    };
+
+}
+
+/* =======================================
+   DRAGGING
+======================================= */
+
+function setupDragging(win){
+
+    const bar =
+    win.querySelector(
+    ".window-titlebar"
+    );
+
+    let dragging=false;
+
+    let startX=0;
+    let startY=0;
+
+    let startLeft=0;
+    let startTop=0;
+
+    bar.addEventListener(
+    "mousedown",
+    e=>{
+
+        dragging=true;
+
+        startX=e.clientX;
+        startY=e.clientY;
+
+        startLeft=
+        parseInt(win.style.left);
+
+        startTop=
+        parseInt(win.style.top);
+
+        bringToFront(win);
+
+    });
+
+    document.addEventListener(
+    "mousemove",
+    e=>{
+
+        if(!dragging)return;
+
+        win.style.left=
+        startLeft+
+        (e.clientX-startX)+"px";
+
+        win.style.top=
+        startTop+
+        (e.clientY-startY)+"px";
+
+    });
+
+    document.addEventListener(
+    "mouseup",
+    ()=>{
+        dragging=false;
+    });
+}
+
+/* =======================================
+   RESIZE
+======================================= */
+
+function setupResize(win){
+
+    const handle =
+    win.querySelector(
+    ".resize-handle"
+    );
+
+    let resizing=false;
+
+    let startX;
+    let startY;
+
+    let startW;
+    let startH;
+
+    handle.addEventListener(
+    "mousedown",
+    e=>{
+
+        e.stopPropagation();
+
+        resizing=true;
+
+        startX=e.clientX;
+        startY=e.clientY;
+
+        startW=
+        parseInt(win.offsetWidth);
+
+        startH=
+        parseInt(win.offsetHeight);
+
+    });
+
+    document.addEventListener(
+    "mousemove",
+    e=>{
+
+        if(!resizing)return;
+
+        win.style.width=
+        Math.max(
+        300,
+        startW+
+        (e.clientX-startX)
+        )+"px";
+
+        win.style.height=
+        Math.max(
+        200,
+        startH+
+        (e.clientY-startY)
+        )+"px";
+
+    });
+
+    document.addEventListener(
+    "mouseup",
+    ()=>{
+
+        resizing=false;
+
+    });
+
+}
+
+/* =======================================
+   APPS
+======================================= */
+
+function openBrowser(){
+
+createWindow(
+"Web Browser",
+
+`
+<div style="height:100%;display:flex;flex-direction:column">
+
+<input
+id="browserUrl"
+placeholder="https://"
+style="
+padding:10px;
+border:none;
+">
+
+<iframe
+src="https://example.com"
+style="
+flex:1;
+border:none;
+">
+</iframe>
+
+</div>
+`,
+900,
+600
+);
+
+}
+
+function openTerminal(){
+
+createWindow(
+"Terminal",
+
+`
+<div
+style="
+background:black;
+color:#00ff88;
+height:100%;
+padding:10px;
+font-family:Consolas;
+overflow:auto;
+"
+>
+
+BrainJuice Terminal v0.1
+
+<br><br>
+
+Type commands soon...
+
+</div>
+`,
+700,
+450
+);
+
+}
+
+function openFiles(){
+
+createWindow(
+"File Explorer",
+
+`
+<h2>BrainFS</h2>
+
+<ul>
+
+<li>Desktop</li>
+<li>Documents</li>
+<li>Downloads</li>
+<li>Apps</li>
+<li>Games</li>
+
+</ul>
+`,
+600,
+450
+);
+
+}
+
+function openSettings(){
+
+createWindow(
+"Settings",
+
+`
+<h2>Settings</h2>
+
+<button onclick="
+document.body.style.filter='invert(1)'
+">
+Invert Theme
+</button>
+
+<br><br>
+
+<button onclick="
+document.body.style.filter='none'
+">
+Normal Theme
+</button>
+`,
+500,
+400
+);
+
+}
+
+function openStore(){
+
+createWindow(
+"App Store",
+
+`
+<h2>BrainJuice App Store</h2>
+
+<p>
+GitHub package support
+coming in Part 1A.5
+</p>
+
+<hr>
+
+<button>
+Install Paint
+</button>
+
+<button>
+Install Notes
+</button>
+
+<button>
+Install Calculator
+</button>
+`,
+700,
+500
+);
+
+}
+
+/* =======================================
+   ICON HOOKS
+======================================= */
+
+document
+.querySelectorAll(".desktopIcon")
+.forEach(icon=>{
+
+icon.addEventListener(
+"dblclick",
+()=>{
+
+const text =
+icon.innerText.trim();
+
+if(text==="Browser")
+openBrowser();
+
+if(text==="Files")
+openFiles();
+
+if(text==="Terminal")
+openTerminal();
+
+if(text==="Settings")
+openSettings();
+
+if(text==="App Store")
+openStore();
+
+});
+});
+
+/* =======================================
+   START MENU APPS
+======================================= */
+
+document
+.querySelectorAll(".startApp")
+.forEach(app=>{
+
+app.onclick=()=>{
+
+const name =
+app.textContent;
+
+if(name.includes("Browser"))
+openBrowser();
+
+if(name.includes("Explorer"))
+openFiles();
+
+if(name.includes("Terminal"))
+openTerminal();
+
+if(name.includes("Settings"))
+openSettings();
+
+if(name.includes("Store"))
+openStore();
+
+};
+
+});
+
+/* =======================================
+   DOCK APPS
+======================================= */
+
+const dock =
+document.querySelectorAll(
+".dockIcon"
+);
+
+dock[0].onclick=
+openBrowser;
+
+dock[1].onclick=
+openFiles;
+
+dock[2].onclick=
+openTerminal;
+
+dock[3].onclick=
+openSettings;
+
+dock[4].onclick=
+openStore;
+
+/* =======================================
+   BOOT COMPLETE
+======================================= */
+
+notify(
+"BrainJuiceOS Ready"
+);
+  
+</body>
+</html>
