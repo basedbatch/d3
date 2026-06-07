@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BrainJuiceOS</title>
+<style>
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+font-family:sans-serif;
+background:#1e1e1e;
+}
+
+#login{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#111;
+}
+
+#desktop{
+display:none;
+position:absolute;
+inset:0;
+background:url('https://picsum.photos/1920/1080') center/cover;
+}
+
+#taskbar{
+position:absolute;
+bottom:0;
+left:0;
+right:0;
+height:40px;
+background:#000a;
+display:flex;
+}
+
+#startBtn{
+width:80px;
+}
+
+#sidebar{
+position:absolute;
+top:0;
+left:0;
+width:50px;
+bottom:40px;
+background:#000a;
+}
+
+#startMenu{
+display:none;
+position:absolute;
+bottom:40px;
+left:0;
+width:250px;
+height:400px;
+background:#222;
+overflow:auto;
+}
+
+.window{
+position:absolute;
+background:white;
+border:1px solid black;
+width:500px;
+height:350px;
+resize:both;
+overflow:hidden;
+}
+
+.title{
+background:#333;
+color:white;
+padding:5px;
+cursor:move;
+}
+
+.content{
+height:calc(100% - 30px);
+overflow:auto;
+}
+
+.desktop-icon{
+padding:10px;
+color:white;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+<div>
+<h2 style="color:white">BrainJuiceOS</h2>
+<input id="user" placeholder="User">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+</div>
+  
+<div id="desktop">
+
+<div id="sidebar"></div>
+
+<div class="desktop-icon" onclick="openTerminal()">
+Terminal
+</div>
+
+<div class="desktop-icon" onclick="openBrowser()">
+Browser
+</div>
+
+<div class="desktop-icon" onclick="openStore()">
+App Store
+</div>
+
+<div id="startMenu"></div>
+
+<div id="taskbar">
+<button id="startBtn">Start</button>
+<input type="file" id="importFile">
+</div>
+<input type="file" onchange="
+importZip(this.files[0])
+">
+  
+</div>
+
+<script>
+
+const apps=[];
+
+function login(){
+desktop.style.display="block";
+login.style.display="none";
+}
+installAllClipOns();
+  
+startBtn.onclick=()=>{
+startMenu.style.display=
+startMenu.style.display==="block"
+?"none":"block";
+};
+
+function createWindow(title,html){
+
+let win=document.createElement("div");
+win.className="window";
+
+win.style.left="100px";
+win.style.top="100px";
+
+win.innerHTML=`
+<div class="title">${title}</div>
+<div class="content">${html}</div>
+`;
+
+desktop.appendChild(win);
+
+drag(win);
+
+return win;
+}
+
+function drag(win){
+
+let bar=win.querySelector(".title");
+
+let x,y,m=false;
+
+bar.onmousedown=e=>{
+m=true;
+x=e.offsetX;
+y=e.offsetY;
+};
+
+document.onmouseup=()=>m=false;
+
+document.onmousemove=e=>{
+if(!m)return;
+win.style.left=e.pageX-x+"px";
+win.style.top=e.pageY-y+"px";
+};
+}
+
+function openTerminal(){
+
+let win=createWindow("Terminal",`
+<textarea id=t
+style="width:100%;height:100%"></textarea>
+`);
+
+let t=win.querySelector("#t");
+
+t.addEventListener("keydown",e=>{
+
+if(e.key==="Enter"){
+
+let lines=t.value.split("\n");
+let cmd=lines[lines.length-1];
+
+if(cmd==="help")
+t.value+="\nhelp clear date";
+
+if(cmd==="date")
+t.value+="\n"+new Date();
+
+if(cmd==="clear")
+t.value="";
+}
+});
+}
+
+function openBrowser(){
+
+createWindow("Browser",`
+<input id=url style="width:100%">
+<iframe id=frame style="
+width:100%;
+height:95%">
+</iframe>
+`);
+
+setTimeout(()=>{
+let u=document.getElementById("url");
+let f=document.getElementById("frame");
+
+u.onchange=()=>{
+f.src=u.value;
+};
+});
+}
+
+async function openStore(){
+
+let win=createWindow("App Store",`
+<input id=repo
+placeholder="owner/repo">
+<button id=load>Load</button>
+<div id=list></div>
+`);
+
+setTimeout(()=>{
+
+load.onclick=async()=>{
+
+let repo=document.getElementById("repo").value;
+
+let r=await fetch(
+`https://api.github.com/repos/${repo}/contents`
+);
+
+let files=await r.json();
+
+list.innerHTML="";
+
+files.forEach(f=>{
+
+if(
+f.name.endsWith(".html")||
+f.name.endsWith(".js")||
+f.name.endsWith(".css")
+){
+
+let b=document.createElement("button");
+b.innerText=f.name;
+
+b.onclick=()=>{
+window.open(f.download_url);
+};
+
+list.appendChild(b);
+}
+});
+};
+
+});
+}
+
+function openConsole(){
+
+createWindow("Dev Console",`
+<textarea style="
+width:100%;
+height:90%"
+id=code></textarea>
+<button id=run>Run</button>
+`);
+
+setTimeout(()=>{
+run.onclick=()=>{
+eval(code.value);
+};
+});
+}
+
+function openBuilder(){
+
+createWindow("App Builder",`
+<textarea style="
+width:100%;
+height:90%"
+placeholder="HTML App">
+</textarea>
+`);
+}
+
+function openGameBuilder(){
+
+createWindow("Game Builder",`
+<textarea style="
+width:100%;
+height:90%"
+placeholder="Game Code">
+</textarea>
+`);
+}
+
+sidebar.innerHTML=`
+<button onclick="openTerminal()">T</button>
+<br>
+<button onclick="openBrowser()">B</button>
+<br>
+<button onclick="openStore()">S</button>
+<br>
+<button onclick="openConsole()">C</button>
+<br>
+<button onclick="openBuilder()">A</button>
+<br>
+<button onclick="openGameBuilder()">G</button>
+`;
+const ClipOns = {};
+
+function registerClipOn(name, init){
+    ClipOns[name]=init;
+}
+
+function loadClipOn(name){
+    if(ClipOns[name]) ClipOns[name]();
+}
+
+function installAllClipOns(){
+    Object.keys(ClipOns).forEach(loadClipOn);
+}
+  registerClipOn("filesystem",()=>{
+
+let db;
+
+const req=indexedDB.open("BrainJuiceFS",1);
+
+req.onupgradeneeded=e=>{
+db=e.target.result;
+
+if(!db.objectStoreNames.contains("files")){
+db.createObjectStore("files",{keyPath:"path"});
+}
+};
+
+req.onsuccess=e=>{
+db=e.target.result;
+window.fs=db;
+};
+
+window.saveFile=(path,data)=>{
+let tx=db.transaction("files","readwrite");
+tx.objectStore("files").put({path,data});
+};
+
+window.readFile=(path)=>{
+return new Promise(r=>{
+let tx=db.transaction("files");
+let q=tx.objectStore("files").get(path);
+q.onsuccess=()=>r(q.result?.data);
+});
+};
+
+});
+  registerClipOn("githubApps",()=>{
+
+window.installRepo=async(repo)=>{
+
+let res=await fetch(
+`https://api.github.com/repos/${repo}/contents`
+);
+
+let files=await res.json();
+
+saveFile(
+`/apps/${repo}.json`,
+JSON.stringify(files)
+);
+
+alert("Installed");
+};
+
+});
+  registerClipOn("explorer",()=>{
+
+window.openExplorer=()=>{
+
+let win=createWindow(
+"File Explorer",
+"<div id='explorer'></div>"
+);
+
+setTimeout(()=>{
+
+let tx=fs.transaction("files");
+let store=tx.objectStore("files");
+
+store.getAll().onsuccess=e=>{
+
+explorer.innerHTML="";
+
+e.target.result.forEach(file=>{
+
+explorer.innerHTML+=`
+<div>
+${file.path}
+</div>
+`;
+
+});
+};
+
+});
+
+};
+
+});
+  registerClipOn("zipApps",()=>{
+
+window.importZip=async(file)=>{
+
+const text=await file.text();
+
+saveFile(
+"/packages/"+file.name,
+text
+);
+
+};
+
+});
+  registerClipOn("appBuilder",()=>{
+
+window.openVisualBuilder=()=>{
+
+createWindow(
+"Visual App Builder",
+`
+<textarea id=appCode
+style='width:100%;height:80%'>
+<h1>Hello App</h1>
+</textarea>
+
+<button onclick='previewApp()'>
+Preview
+</button>
+`
+);
+
+};
+
+window.previewApp=()=>{
+
+createWindow(
+"Preview",
+appCode.value
+);
+
+};
+
+});
+  registerClipOn("gameBuilder",()=>{
+
+window.openVisualGameBuilder=()=>{
+
+createWindow(
+"Game Builder",
+`
+<textarea id=gameCode
+style='width:100%;height:80%'>
+<canvas id=c></canvas>
+</textarea>
+
+<button onclick='runGame()'>
+Run
+</button>
+`
+);
+
+};
+
+window.runGame=()=>{
+
+createWindow(
+"Game",
+gameCode.value
+);
+
+};
+
+});
+  registerClipOn("themes",()=>{
+
+window.setTheme=(bg,color)=>{
+
+document.documentElement.style
+.setProperty("--bg",bg);
+
+document.documentElement.style
+.setProperty("--fg",color);
+
+};
+
+});
+  registerClipOn("notifications",()=>{
+
+window.notify=(msg)=>{
+
+let d=document.createElement("div");
+
+d.style.position="fixed";
+d.style.right="10px";
+d.style.bottom="60px";
+d.style.background="#222";
+d.style.color="#fff";
+d.style.padding="10px";
+
+d.innerText=msg;
+
+desktop.appendChild(d);
+
+setTimeout(()=>d.remove(),4000);
+
+};
+
+});
+  registerClipOn("packages",()=>{
+
+window.packages=[];
+
+window.installPackage=(name)=>{
+
+packages.push(name);
+
+saveFile(
+"/packages/list",
+JSON.stringify(packages)
+);
+
+notify(name+" installed");
+};
+
+window.listPackages=()=>packages;
+
+});
+</script>
+</body>
+</html>
